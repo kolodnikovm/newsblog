@@ -1,20 +1,36 @@
-from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from news.models import News
-from news.serializers import NewsSerializer
+from news.serializers import NewsSerializer, UserSerializer
+from news.permissions import IsOwnerOrReadOnly
+from users.models import User
 
 
-@api_view(['GET'])
-def news_detail(request, news_id):
-    """ 
-        Get news by its id
-    """
-    try:
-        news = News.objects.get(pk=news_id)
-    except News.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class NewsList(generics.ListCreateAPIView):
+    queryset = News.objects.all()
+    serializer_class = NewsSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
-    if request.method == 'GET':
-        serializer = NewsSerializer(news, many=True)
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class NewsDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = News.objects.all()
+    serializer_class = NewsSerializer
+    lookup_url_kwarg = 'news_id'
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly)
+
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_url_kwarg = 'user_id'
