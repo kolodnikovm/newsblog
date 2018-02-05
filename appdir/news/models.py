@@ -40,7 +40,7 @@ class News(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     author = models.ForeignKey(
         Author, related_name='articles', on_delete=models.CASCADE, blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.OneToOneField(Category, on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag)
     text_content = models.TextField()
     main_picture = models.ImageField(
@@ -59,3 +59,7 @@ class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     date = models.DateField(auto_now_add=True)
+
+# TODO Add ExraPics model for News
+# class ExtraPics(models.Model):
+#   pass

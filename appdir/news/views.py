@@ -6,15 +6,17 @@ from news.models import News
 from news.serializers import NewsSerializer, UserSerializer
 from news.permissions import IsOwnerOrReadOnly
 from users.models import User
+from news.filters import NewsFilter
 
 
 class NewsList(generics.ListCreateAPIView):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    filter_class = NewsFilter
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user.author)
 
 
 class NewsDetail(generics.RetrieveUpdateDestroyAPIView):
