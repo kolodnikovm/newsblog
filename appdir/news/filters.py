@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from news.models import News
+from news.models import News, Tag
 
 
 class NewsFilter(filters.FilterSet):
@@ -13,4 +13,8 @@ class NewsFilter(filters.FilterSet):
 
     class Meta:
         model = News
-        fields = ['heading']
+        fields = ['heading', 'creation_date', 'author', 'category']
+
+    # @property
+    # def qs(self):
+    #     parent = super(NewsFilter, self).qs
