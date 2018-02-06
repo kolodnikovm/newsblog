@@ -1,5 +1,7 @@
 from django.db.models import Count
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from rest_framework import generics, mixins, permissions, status, viewsets
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,6 +17,10 @@ class NewsList(generics.ListCreateAPIView):
     serializer_class = NewsSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     filter_class = NewsFilter
+    filter_backends = (OrderingFilter, DjangoFilterBackend, SearchFilter)
+    ordering_fields = ('creation_date', 'author__name', 'category__name',)
+    search_fields = ('author__name', 'category__name',
+                     'text_content', 'heading', 'tags__name')
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user.author)

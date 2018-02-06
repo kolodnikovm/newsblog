@@ -14,7 +14,3 @@ class NewsFilter(filters.FilterSet):
     class Meta:
         model = News
         fields = ['heading', 'creation_date', 'author', 'category']
-
-    # @property
-    # def qs(self):
-    #     parent = super(NewsFilter, self).qs
