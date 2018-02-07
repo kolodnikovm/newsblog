@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.models import User
-from news.models import News, Author, Category
+from news.models import News, Author, Category, Tag
 from rest_framework_recursive.fields import RecursiveField
 
 # TODO Recursive Tag Serialization
@@ -23,7 +23,19 @@ class RecursiveCategorySerializer(serializers.ModelSerializer):
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
-        fields = ('name')
+        fields = '__all__'
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
 
 
 class NewsSerializer(serializers.ModelSerializer):

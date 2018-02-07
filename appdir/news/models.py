@@ -45,8 +45,6 @@ class News(models.Model):
     text_content = models.TextField()
     main_picture = models.ImageField(
         upload_to=main_news_pic, blank=True, null=True)
-    additional_pictures = models.ImageField(
-        upload_to=news_pics, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "news"
@@ -60,6 +58,8 @@ class Comment(models.Model):
     text = models.TextField()
     date = models.DateField(auto_now_add=True)
 
-# TODO Add ExraPics model for News
-# class ExtraPics(models.Model):
-#   pass
+
+class ExtraPics(models.Model):
+    image = models.ImageField()
+    news = models.ForeignKey(
+        News, on_delete=models.CASCADE, related_name='extra_pics')

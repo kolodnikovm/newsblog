@@ -1,20 +1,20 @@
 from django.db.models import Count
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+import news.serializers as n_serials
 from news.filters import NewsFilter
-from news.models import News, Tag
+from news.models import Author, Category, News, Tag
 from news.permissions import IsOwnerOrReadOnly
-from news.serializers import NewsSerializer, UserSerializer
 from users.models import User
 
 
 class NewsList(generics.ListCreateAPIView):
     queryset = News.objects.all()
-    serializer_class = NewsSerializer
+    serializer_class = n_serials.NewsSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     filter_class = NewsFilter
     filter_backends = (OrderingFilter, DjangoFilterBackend, SearchFilter)
@@ -42,9 +42,24 @@ class NewsList(generics.ListCreateAPIView):
         return queryset
 
 
+class CategoryList(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = n_serials.CategorySerializer
+
+
+class TagList(generics.ListAPIView):
+    queryset = Tag.objects.all()
+    serializer_class = n_serials.TagSerializer
+
+
+class AuthorList(generics.ListAPIView):
+    queryset = Author.objects.all()
+    serializer_class = n_serials.AuthorSerializer
+
+
 class NewsDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = News.objects.all()
-    serializer_class = NewsSerializer
+    serializer_class = n_serials.NewsSerializer
     lookup_url_kwarg = 'news_id'
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly)
@@ -52,10 +67,18 @@ class NewsDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = n_serials.UserSerializer
+
+    def get_queryset(self):
+        queryset = User.objects.all()
+        user = self.request.user
+        if user.is_staff:
+            return queryset
+
+        raise Http404
 
 
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = n_serials.UserSerializer
     lookup_url_kwarg = 'user_id'
