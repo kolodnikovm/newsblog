@@ -9,7 +9,6 @@ class NewsFilter(filters.FilterSet):
     author = filters.CharFilter(name='author__name', lookup_expr='iexact')
     category = filters.CharFilter(
         name='category__name', lookup_expr='iexact')
-    # TODO Tag Filters
 
     class Meta:
         model = News
