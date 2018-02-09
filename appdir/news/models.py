@@ -53,6 +53,36 @@ class News(models.Model):
         return self.heading
 
 
+class PublishedNews(models.Model):
+    heading = models.CharField(max_length=20, blank=True, null=True)
+    creation_date = models.DateField(auto_now_add=True)
+    author = models.ForeignKey(
+        Author, related_name='p_articles', on_delete=models.CASCADE, blank=True, null=True)
+    category = models.OneToOneField(
+        Category,  on_delete=models.CASCADE, blank=True, null=True)
+    tags = models.ManyToManyField(Tag, blank=True, null=True)
+    text_content = models.TextField(blank=True, null=True)
+    main_picture = models.ImageField(
+        upload_to=main_news_pic, blank=True, null=True)
+
+    draft_news = models.OneToOneField(
+        News, on_delete=models.CASCADE, primary_key=True,)
+
+    class Meta:
+        verbose_name_plural = "published news"
+
+    def save(self, *args, **kwargs):
+        self.heading = self.draft_news.heading
+        self.creation_date = self.draft_news.creation_date
+        self.author = self.draft_news.author
+        self.category = self.draft_news.category
+        # self.tags = self.p_article.tags.set()
+        self.text_content = self.draft_news.text_content
+
+    def __str__(self):
+        return self.heading
+
+
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()

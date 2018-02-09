@@ -3,8 +3,6 @@ from users.models import User
 from news.models import News, Author, Category, Tag
 from rest_framework_recursive.fields import RecursiveField
 
-# TODO Recursive Tag Serialization
-
 
 class RecursiveField(serializers.Serializer):
     def to_representation(self, value):
