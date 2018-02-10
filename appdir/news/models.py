@@ -39,7 +39,7 @@ class News(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     author = models.ForeignKey(
         Author, related_name='articles', on_delete=models.CASCADE, blank=True, null=True)
-    category = models.OneToOneField(
+    category = models.ForeignKey(
         Category,  on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag)
     text_content = models.TextField()
@@ -58,7 +58,7 @@ class PublishedNews(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     author = models.ForeignKey(
         Author, related_name='p_articles', on_delete=models.CASCADE, blank=True, null=True)
-    category = models.OneToOneField(
+    category = models.ForeignKey(
         Category,  on_delete=models.CASCADE, blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True, null=True)
     text_content = models.TextField(blank=True, null=True)
@@ -66,7 +66,7 @@ class PublishedNews(models.Model):
         upload_to=main_news_pic, blank=True, null=True)
 
     draft_news = models.OneToOneField(
-        News, on_delete=models.CASCADE, primary_key=True,)
+        News, related_name='published_news', on_delete=models.CASCADE, primary_key=True,)
 
     class Meta:
         verbose_name_plural = "published news"
@@ -78,6 +78,7 @@ class PublishedNews(models.Model):
         self.category = self.draft_news.category
         # self.tags = self.p_article.tags.set()
         self.text_content = self.draft_news.text_content
+        super(PublishedNews, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.heading

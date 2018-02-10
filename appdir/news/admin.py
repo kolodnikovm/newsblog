@@ -15,12 +15,11 @@ class NewsAdmin(admin.ModelAdmin):
 
     def make_published(self, request, queryset):
         for draft_news in queryset:
-            if hasattr(draft_news, 'publishednews'):
-                pass
-                # Update publish news
+            if hasattr(draft_news, 'published_news'):
+                draft_news.published_news.save()
             else:
-                pass
-                # Create publish news from draft one
+                pub = PublishedNews(draft_news=draft_news)
+                pub.save()
         self.message_user(
             request, "Selected news were successfully published")
     make_published.short_description = "Mark selected news as published"
