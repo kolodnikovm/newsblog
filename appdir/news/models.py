@@ -76,7 +76,8 @@ class PublishedNews(models.Model):
         self.creation_date = self.draft_news.creation_date
         self.author = self.draft_news.author
         self.category = self.draft_news.category
-        # self.tags = self.p_article.tags.set()
+        self.pub_extra_pics.set(self.draft_news.extra_pics.all())
+        self.tags.set(self.draft_news.tags.all())
         self.text_content = self.draft_news.text_content
         super(PublishedNews, self).save(*args, **kwargs)
 
@@ -94,3 +95,6 @@ class ExtraPics(models.Model):
     image = models.ImageField()
     news = models.ForeignKey(
         News, on_delete=models.CASCADE, related_name='extra_pics')
+    published_news = models.ForeignKey(
+        PublishedNews, on_delete=models.CASCADE, related_name='pub_extra_pics', blank=True, null=True
+    )

@@ -1,20 +1,19 @@
 from django.db.models import Count
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
-from rest_framework import generics, mixins, permissions, status, viewsets
+from rest_framework import generics, permissions
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.response import Response
 
 import news.serializers as n_serials
 from news.filters import NewsFilter
-from news.models import Author, Category, News, Tag
+from news.models import Author, Category, News, Tag, PublishedNews
 from news.permissions import IsOwnerOrReadOnly
 from users.models import User
 
 
 class NewsList(generics.ListCreateAPIView):
-    queryset = News.objects.all()
-    serializer_class = n_serials.NewsSerializer
+    queryset = PublishedNews.objects.all()
+    serializer_class = n_serials.PublishedNewsSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     filter_class = NewsFilter
     filter_backends = (OrderingFilter, DjangoFilterBackend, SearchFilter)
@@ -26,6 +25,11 @@ class NewsList(generics.ListCreateAPIView):
         serializer.save(author=self.request.user.author)
 
     def get_queryset(self):
+        """
+        Custom queries on tags:
+            -tags = <tag_id1>+<tag_id2>+...+<tag_id(n)> – news contain any given tags
+            -stags = <tag_id1>+<tag_id2>+...+<tag_id(n)> – news contain exact set of tags
+        """
         tags = self.request.query_params.get('tags', None)
         stags = self.request.query_params.get('stags', None)
         queryset = News.objects.all()
@@ -71,6 +75,19 @@ class UserList(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = User.objects.all()
+        user = self.request.user
+        if user.is_staff:
+            return queryset
+
+        raise Http404
+
+
+class DraftNewsList(generics.ListAPIView):
+    queryset = News.objects.all()
+    serializer_class = n_serials.NewsSerializer
+
+    def get_queryset(self):
+        queryset = News.objects.all()
         user = self.request.user
         if user.is_staff:
             return queryset

@@ -1,13 +1,8 @@
 from rest_framework import serializers
+
+from news.models import Author, Category, News, Tag, PublishedNews
+from news.utilfuncs import RecursiveField
 from users.models import User
-from news.models import News, Author, Category, Tag
-from rest_framework_recursive.fields import RecursiveField
-
-
-class RecursiveField(serializers.Serializer):
-    def to_representation(self, value):
-        serializer = self.parent.parent.__class__(value, context=self.context)
-        return serializer.data
 
 
 class RecursiveCategorySerializer(serializers.ModelSerializer):
@@ -36,13 +31,22 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PublishedNewsSerializer(serializers.ModelSerializer):
+    category = RecursiveCategorySerializer()
+
+    class Meta:
+        model = PublishedNews
+        fields = ('heading', 'creation_date', 'author', 'category',
+                  'tags', 'text_content', 'main_picture')
+
+
 class NewsSerializer(serializers.ModelSerializer):
     category = RecursiveCategorySerializer()
 
     class Meta:
         model = News
         fields = ('heading', 'creation_date', 'author', 'category',
-                  'tags', 'text_content', 'main_picture', 'extra_pics')
+                  'tags', 'text_content', 'main_picture')
 
 
 class UserSerializer(serializers.ModelSerializer):
