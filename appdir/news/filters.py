@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from news.models import News, Tag
+from news.models import DraftNews, Tag
 
 
 class NewsFilter(filters.FilterSet):
@@ -11,5 +11,5 @@ class NewsFilter(filters.FilterSet):
         name='category__name', lookup_expr='iexact')
 
     class Meta:
-        model = News
+        model = DraftNews
         fields = ['heading', 'creation_date', 'author', 'category']

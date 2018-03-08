@@ -1,12 +1,15 @@
 from django.db.models import Count
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 import news.serializers as n_serials
 from news.filters import NewsFilter
-from news.models import Author, Category, News, Tag, PublishedNews
+from news.models import Author, Category, DraftNews, PublishedNews, Tag
 from news.permissions import IsOwnerOrReadOnly
 from users.models import User
 
@@ -32,16 +35,17 @@ class NewsList(generics.ListCreateAPIView):
         """
         tags = self.request.query_params.get('tags', None)
         stags = self.request.query_params.get('stags', None)
-        queryset = News.objects.all()
+        queryset = PublishedNews.objects.all()
         if stags:
             stags = [int(tag) for tag in stags.split()]
-            queryset = News.objects.annotate(
+            queryset = PublishedNews.objects.annotate(
                 count=Count('tags')).filter(count=len(stags))
             for tag_id in stags:
                 queryset = queryset.filter(tags__pk=tag_id)
         elif tags:
             tags = [int(tag) for tag in tags.split()]
-            queryset = News.objects.filter(tags__id__in=tags).distinct()
+            queryset = PublishedNews.objects.filter(
+                tags__id__in=tags).distinct()
 
         return queryset
 
@@ -62,8 +66,8 @@ class AuthorList(generics.ListAPIView):
 
 
 class NewsDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = News.objects.all()
-    serializer_class = n_serials.NewsSerializer
+    queryset = PublishedNews.objects.all()
+    serializer_class = n_serials.PublishedNews
     lookup_url_kwarg = 'news_id'
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly)
@@ -83,11 +87,11 @@ class UserList(generics.ListAPIView):
 
 
 class DraftNewsList(generics.ListAPIView):
-    queryset = News.objects.all()
-    serializer_class = n_serials.NewsSerializer
+    queryset = DraftNews.objects.all()
+    serializer_class = n_serials.DraftNewsSerializer
 
     def get_queryset(self):
-        queryset = News.objects.all()
+        queryset = DraftNews.objects.all()
         user = self.request.user
         if user.is_staff:
             return queryset
@@ -95,7 +99,5 @@ class DraftNewsList(generics.ListAPIView):
         raise Http404
 
 
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
+class UserCreate(generics.CreateAPIView):
     serializer_class = n_serials.UserSerializer
-    lookup_url_kwarg = 'user_id'

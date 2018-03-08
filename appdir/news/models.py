@@ -34,7 +34,7 @@ class Tag(models.Model):
         return self.name
 
 
-class News(models.Model):
+class DraftNews(models.Model):
     heading = models.CharField(max_length=20)
     creation_date = models.DateField(auto_now_add=True)
     author = models.ForeignKey(
@@ -47,26 +47,15 @@ class News(models.Model):
         upload_to=main_news_pic, blank=True, null=True)
 
     class Meta:
-        verbose_name_plural = "news"
+        verbose_name_plural = "draft news"
 
     def __str__(self):
         return self.heading
 
 
-class PublishedNews(models.Model):
-    heading = models.CharField(max_length=20, blank=True, null=True)
-    creation_date = models.DateField(auto_now_add=True)
-    author = models.ForeignKey(
-        Author, related_name='p_articles', on_delete=models.CASCADE, blank=True, null=True)
-    category = models.ForeignKey(
-        Category,  on_delete=models.CASCADE, blank=True, null=True)
-    tags = models.ManyToManyField(Tag, blank=True, null=True)
-    text_content = models.TextField(blank=True, null=True)
-    main_picture = models.ImageField(
-        upload_to=main_news_pic, blank=True, null=True)
-
+class PublishedNews(DraftNews):
     draft_news = models.OneToOneField(
-        News, related_name='published_news', on_delete=models.CASCADE, primary_key=True,)
+        DraftNews, related_name='published_news', on_delete=models.CASCADE, primary_key=True,)
 
     class Meta:
         verbose_name_plural = "published news"
@@ -94,7 +83,7 @@ class Comment(models.Model):
 class ExtraPics(models.Model):
     image = models.ImageField()
     news = models.ForeignKey(
-        News, on_delete=models.CASCADE, related_name='extra_pics')
+        DraftNews, on_delete=models.CASCADE, related_name='extra_pics')
     published_news = models.ForeignKey(
         PublishedNews, on_delete=models.CASCADE, related_name='pub_extra_pics', blank=True, null=True
     )
