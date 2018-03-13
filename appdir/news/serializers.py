@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from news.models import Author, Category, DraftNews, Tag, PublishedNews
+from news.models import Author, Category, News, Tag
 from news.utilfuncs import RecursiveField
 from users.models import User
 
@@ -31,20 +31,12 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PublishedNewsSerializer(serializers.ModelSerializer):
+class NewsSerializer(serializers.ModelSerializer):
     category = RecursiveCategorySerializer()
+    tags = TagSerializer(many=True)
 
     class Meta:
-        model = PublishedNews
-        fields = ('heading', 'creation_date', 'author', 'category',
-                  'tags', 'text_content', 'main_picture')
-
-
-class DraftNewsSerializer(serializers.ModelSerializer):
-    category = RecursiveCategorySerializer()
-
-    class Meta:
-        model = DraftNews
+        model = News
         fields = ('heading', 'creation_date', 'author', 'category',
                   'tags', 'text_content', 'main_picture')
 
@@ -52,4 +44,4 @@ class DraftNewsSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ('username', 'password', 'avatar', 'first_name', 'last_name')

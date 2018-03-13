@@ -1,103 +1,83 @@
 from django.db.models import Count
 from django.http import Http404
-from django_filters.rest_framework import DjangoFilterBackend, FilterSet
-from rest_framework import generics, permissions, status
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, permissions
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
-import news.serializers as n_serials
-from news.filters import NewsFilter
-from news.models import Author, Category, DraftNews, PublishedNews, Tag
+from django.shortcuts import get_object_or_404
+import news.serializers as news_serials
+from news.filters import NewsFilter, TagsFilterBackend
+from news.models import Author, Category, News, Tag
 from news.permissions import IsOwnerOrReadOnly
 from users.models import User
+from rest_framework import viewsets
+from rest_framework import mixins
+from rest_framework import status
 
-
-class NewsList(generics.ListCreateAPIView):
-    queryset = PublishedNews.objects.all()
-    serializer_class = n_serials.PublishedNewsSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+class NewsViewSet(mixins.ListModelMixin, 
+                  mixins.RetrieveModelMixin, 
+                  viewsets.GenericViewSet):
+    queryset = News.objects.all()
+    serializer_class = news_serials.NewsSerializer
     filter_class = NewsFilter
-    filter_backends = (OrderingFilter, DjangoFilterBackend, SearchFilter)
-    ordering_fields = ('creation_date', 'author__name', 'category__name',)
-    search_fields = ('author__name', 'category__name',
-                     'text_content', 'heading', 'tags__name')
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter, TagsFilterBackend)
+    search_fields = ('text_content', 'category__name', 'tags__name' 'author__name')
+    ordering_fields = ('creation_date', 'author__name', 'category__name')
+    
+    def list(self, request):
+        queryset = News.objects.filter(is_published=True)
+        serializer = news_serials.NewsSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user.author)
+    def retrieve(self, request, pk=None):
+        queryset = News.objects.all()
+        news = get_object_or_404(queryset, pk=pk)
+        serializer = news_serials.NewsSerializer(news)
+        return Response(serializer.data)
 
-    def get_queryset(self):
-        """
-        Custom queries on tags:
-            -tags = <tag_id1>+<tag_id2>+...+<tag_id(n)> – news contain any given tags
-            -stags = <tag_id1>+<tag_id2>+...+<tag_id(n)> – news contain exact set of tags
-        """
-        tags = self.request.query_params.get('tags', None)
-        stags = self.request.query_params.get('stags', None)
-        queryset = PublishedNews.objects.all()
-        if stags:
-            stags = [int(tag) for tag in stags.split()]
-            queryset = PublishedNews.objects.annotate(
-                count=Count('tags')).filter(count=len(stags))
-            for tag_id in stags:
-                queryset = queryset.filter(tags__pk=tag_id)
-        elif tags:
-            tags = [int(tag) for tag in tags.split()]
-            queryset = PublishedNews.objects.filter(
-                tags__id__in=tags).distinct()
-
-        return queryset
-
+    @list_route()
+    def get_drafts(self, request):
+        if request.user.is_staff:
+            queryset = News.objects.filter(is_published=False)
+            serializer = news_serials.NewsSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            raise Http404
+        
 
 class CategoryList(generics.ListAPIView):
     queryset = Category.objects.all()
-    serializer_class = n_serials.CategorySerializer
+    serializer_class = news_serials.CategorySerializer
 
 
 class TagList(generics.ListAPIView):
     queryset = Tag.objects.all()
-    serializer_class = n_serials.TagSerializer
+    serializer_class = news_serials.TagSerializer
 
 
 class AuthorList(generics.ListAPIView):
     queryset = Author.objects.all()
-    serializer_class = n_serials.AuthorSerializer
+    serializer_class = news_serials.AuthorSerializer
 
 
-class NewsDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = PublishedNews.objects.all()
-    serializer_class = n_serials.PublishedNews
-    lookup_url_kwarg = 'news_id'
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly)
+class UserViewSet(mixins.ListModelMixin, 
+                  mixins.CreateModelMixin, 
+                  viewsets.GenericViewSet):
 
-
-class UserList(generics.ListAPIView):
     queryset = User.objects.all()
-    serializer_class = n_serials.UserSerializer
-
-    def get_queryset(self):
-        queryset = User.objects.all()
-        user = self.request.user
-        if user.is_staff:
-            return queryset
-
-        raise Http404
+    serializer_class = news_serials.UserSerializer
 
 
-class DraftNewsList(generics.ListAPIView):
-    queryset = DraftNews.objects.all()
-    serializer_class = n_serials.DraftNewsSerializer
+    def list(self, request):
+        if request.user.is_staff:
+            queryset = self.get_queryset()
+            serializer = news_serials.UserSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            raise Http404
 
-    def get_queryset(self):
-        queryset = DraftNews.objects.all()
-        user = self.request.user
-        if user.is_staff:
-            return queryset
-
-        raise Http404
+    def create(self, request, *args, **kwargs):
+        super().create(self, request, *args, **kwargs)
 
 
-class UserCreate(generics.CreateAPIView):
-    serializer_class = n_serials.UserSerializer

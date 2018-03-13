@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
-from news.models import DraftNews, Tag
-
+from news.models import News, Tag
+from rest_framework import filters as filts
+from django.http import Http404
 
 class NewsFilter(filters.FilterSet):
     heading = filters.CharFilter(name='heading', lookup_expr='iexact')
@@ -11,5 +12,29 @@ class NewsFilter(filters.FilterSet):
         name='category__name', lookup_expr='iexact')
 
     class Meta:
-        model = DraftNews
+        model = News
         fields = ['heading', 'creation_date', 'author', 'category']
+
+class TagsFilterBackend(filts.BaseFilterBackend):
+    """
+    Filter tags.
+    """
+    def filter_queryset(self, request, queryset, view):
+        tags = self.request.query_params.get('tags', None)
+        stags = self.request.query_params.get('stags', None)
+
+        if stags:
+            stags = [int(tag) for tag in stags.split()]
+            result_queryset = queryset.objects.annotate(
+                count=Count('tags')).filter(count=len(stags))
+            for tag_id in stags:
+                result_queryset = result_queryset.filter(tags__pk=tag_id)
+        elif tags:
+            tags = [int(tag) for tag in tags.split()]
+            result_queryset = queryset.objects.filter(
+                tags__id__in=tags).distinct()
+
+        return result_queryset
+
+class isAdminFilterBackend(filts.BaseFilterBackend):
+    pass
