@@ -1,7 +1,7 @@
 from django.db import models
 
 from users.models import User
-from .utilfuncs import main_news_pic, news_pics
+from news.utils.functions import main_news_pic, news_pics
 
 
 class Author(models.Model):

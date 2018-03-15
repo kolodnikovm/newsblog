@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import news.utilfuncs
+import news.utils.functions
 
 
 class Migration(migrations.Migration):
@@ -18,19 +18,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Author',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
                 ('birth_date', models.DateField()),
                 ('description', models.CharField(max_length=140)),
-                ('user', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='author', to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                              related_name='author', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='Category',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=20)),
-                ('parent_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='subcategories', to='news.Category')),
+                ('parent_id', models.ForeignKey(blank=True, null=True,
+                                                on_delete=django.db.models.deletion.CASCADE, related_name='subcategories', to='news.Category')),
             ],
             options={
                 'verbose_name_plural': 'categories',
@@ -39,29 +43,36 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Comment',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('text', models.TextField()),
                 ('date', models.DateField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='ExtraPics',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('image', models.ImageField(upload_to='')),
             ],
         ),
         migrations.CreateModel(
             name='News',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('heading', models.CharField(max_length=20)),
                 ('creation_date', models.DateField(auto_now_add=True)),
                 ('text_content', models.TextField()),
-                ('main_picture', models.ImageField(blank=True, null=True, upload_to=news.utilfuncs.main_news_pic)),
-                ('author', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='articles', to='news.Author')),
-                ('category', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='news.Category')),
+                ('main_picture', models.ImageField(blank=True, null=True,
+                                                   upload_to=news.utils.functions.main_news_pic)),
+                ('author', models.ForeignKey(blank=True, null=True,
+                                             on_delete=django.db.models.deletion.CASCADE, related_name='articles', to='news.Author')),
+                ('category', models.OneToOneField(
+                    on_delete=django.db.models.deletion.CASCADE, to='news.Category')),
             ],
             options={
                 'verbose_name_plural': 'news',
@@ -70,14 +81,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PublishedNews',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('heading', models.CharField(blank=True, max_length=20, null=True)),
                 ('creation_date', models.DateField(auto_now_add=True)),
                 ('text_content', models.TextField(blank=True, null=True)),
-                ('main_picture', models.ImageField(blank=True, null=True, upload_to=news.utilfuncs.main_news_pic)),
-                ('author', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='p_articles', to='news.Author')),
-                ('category', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='news.Category')),
-                ('draft_news', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='news.News')),
+                ('main_picture', models.ImageField(blank=True, null=True,
+                                                   upload_to=news.utils.functions.main_news_pic)),
+                ('author', models.ForeignKey(blank=True, null=True,
+                                             on_delete=django.db.models.deletion.CASCADE, related_name='p_articles', to='news.Author')),
+                ('category', models.OneToOneField(blank=True, null=True,
+                                                  on_delete=django.db.models.deletion.CASCADE, to='news.Category')),
+                ('draft_news', models.OneToOneField(blank=True, null=True,
+                                                    on_delete=django.db.models.deletion.CASCADE, to='news.News')),
             ],
             options={
                 'verbose_name_plural': 'published news',
@@ -86,7 +102,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Tag',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=20)),
             ],
         ),
@@ -103,6 +120,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='extrapics',
             name='news',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='extra_pics', to='news.News'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name='extra_pics', to='news.News'),
         ),
     ]

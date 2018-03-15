@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from news.models import Author, Category, News, Tag
-from news.utilfuncs import RecursiveField
+from news.utils.serializers import RecursiveField
 from users.models import User
 
 

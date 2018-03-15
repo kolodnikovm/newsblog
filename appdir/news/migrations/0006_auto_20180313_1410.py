@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import news.utilfuncs
+import news.utils.functions
 
 
 class Migration(migrations.Migration):
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('is_published', models.BooleanField(default=False)),
                 ('creation_date', models.DateField(auto_now_add=True)),
                 ('text_content', models.TextField()),
-                ('main_picture', models.ImageField(blank=True, null=True, upload_to=news.utilfuncs.main_news_pic)),
+                ('main_picture', models.ImageField(blank=True, null=True, upload_to=news.utils.functions.main_news_pic)),
                 ('author', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='articles', to='news.Author')),
                 ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='news.Category')),
                 ('tags', models.ManyToManyField(to='news.Tag')),
