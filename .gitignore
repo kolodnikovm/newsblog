@@ -99,3 +99,16 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# VSCode
+.vscode/*
+
+
+# Images
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# Django settings
+local_settings.py

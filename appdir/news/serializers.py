@@ -1,13 +1,8 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+from news.models import Author, Category, News, Tag
+from news.utils.serializers import RecursiveField
 from users.models import User
-from news.models import News, Author, Category, Tag
-from rest_framework_recursive.fields import RecursiveField
-
-
-class RecursiveField(serializers.Serializer):
-    def to_representation(self, value):
-        serializer = self.parent.parent.__class__(value, context=self.context)
-        return serializer.data
 
 
 class RecursiveCategorySerializer(serializers.ModelSerializer):
@@ -38,16 +33,26 @@ class TagSerializer(serializers.ModelSerializer):
 
 class NewsSerializer(serializers.ModelSerializer):
     category = RecursiveCategorySerializer()
+    tags = TagSerializer(many=True)
 
     class Meta:
         model = News
         fields = ('heading', 'creation_date', 'author', 'category',
-                  'tags', 'text_content', 'main_picture', 'extra_pics')
+                  'tags', 'text_content', 'main_picture')
 
 
 class UserSerializer(serializers.ModelSerializer):
-    author = serializers.PrimaryKeyRelatedField(queryset=Author.objects.all())
+    password = serializers.CharField(write_only=True)
+
+    def create(self, validated_data):
+        user = User.objects.create(
+            **validated_data
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+
+        return user
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'date_joined', 'author')
+        fields = ('username', 'password', 'avatar', 'first_name', 'last_name')
