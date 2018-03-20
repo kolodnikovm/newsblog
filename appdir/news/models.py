@@ -1,7 +1,6 @@
 from django.db import models
 
 from users.models import User
-from news.utils.functions import main_news_pic, news_pics
 
 
 class Author(models.Model):
@@ -35,8 +34,8 @@ class Tag(models.Model):
 
 
 class News(models.Model):
-    heading = models.CharField(max_length=20)
-    is_published = models.BooleanField(default=False) 
+    heading = models.CharField(max_length=80)
+    is_published = models.BooleanField(default=False)
     creation_date = models.DateField(auto_now_add=True)
     author = models.ForeignKey(
         Author, related_name='articles', on_delete=models.CASCADE, blank=True, null=True)
@@ -44,8 +43,7 @@ class News(models.Model):
         Category,  on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag)
     text_content = models.TextField()
-    main_picture = models.ImageField(
-        upload_to=main_news_pic, blank=True, null=True)
+    main_picture = models.ImageField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "news"
@@ -55,7 +53,10 @@ class News(models.Model):
 
 
 class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='users')
+    news = models.ForeignKey(
+        News, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
     date = models.DateField(auto_now_add=True)
 
@@ -64,4 +65,3 @@ class ExtraPics(models.Model):
     image = models.ImageField()
     news = models.ForeignKey(
         News, on_delete=models.CASCADE, related_name='extra_pics')
-

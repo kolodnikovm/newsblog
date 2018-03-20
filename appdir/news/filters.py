@@ -32,6 +32,8 @@ class TagsFilterBackend(filters.BaseFilterBackend):
             stags = [int(tag) for tag in stags.split()]
             result_queryset = queryset.annotate(
                 count=Count('tags')).filter(count=len(stags))
+            result_queryset = queryset.filter(
+                tags=Tag.objects.filter(pk__in=stags))
             for tag_id in stags:
                 result_queryset = result_queryset.filter(tags__pk=tag_id)
         elif tags:
